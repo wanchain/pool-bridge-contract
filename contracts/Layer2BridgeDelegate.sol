@@ -24,6 +24,14 @@ contract Layer2BridgeDelegate is
         erc20Token = ERC20(_tokenAddress);
     }
 
+    function initializeV2() external initializer {
+        tokenSet.add(address(erc20Token));
+        tokens[address(erc20Token)].tokenAddr = address(erc20Token);
+        tokens[address(erc20Token)].symbol = erc20Token.symbol();
+        tokens[address(erc20Token)].decimal = erc20Token.decimals();
+        tokens[address(erc20Token)].enabled = true;
+    }
+
     function name() external view returns (string memory) {
         return erc20Token.name();
     }
@@ -68,5 +76,41 @@ contract Layer2BridgeDelegate is
     {
         erc20Token.safeTransferFrom(account, address(this), value);
         return true;
+    }
+
+    function getStakerCountByToken(address tokenAddr)
+        external
+        view
+        returns (uint256 count)
+    {
+        return stakerSet[tokenAddr].length();
+    }
+
+    function getStakeAddrByIndex(address tokenAddr, uint256 index)
+        external
+        view
+        returns (address from)
+    {
+        return stakerSet[tokenAddr].at(index);
+    }
+
+    function getTokenCount() external view returns (uint256 count) {
+        return tokenSet.length();
+    }
+
+    function getTokenAddressByIndex(uint256 index)
+        external
+        view
+        returns (address token)
+    {
+        return tokenSet.at(index);
+    }
+
+    function stake(uint amount) external {
+
+    }
+
+    function withdraw(uint amount) external {
+        
     }
 }
