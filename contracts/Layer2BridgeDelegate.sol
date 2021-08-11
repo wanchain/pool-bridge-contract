@@ -11,6 +11,10 @@ contract Layer2BridgeDelegate is
     AccessControl,
     Layer2BridgeStorage
 {
+    event Stake(address indexed user, uint256 amount);
+
+    event Withdraw(address indexed user, uint256 amount);
+
     modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "no access");
         _;
@@ -66,6 +70,7 @@ contract Layer2BridgeDelegate is
         returns (bool)
     {
         erc20Token.safeTransfer(account, value);
+        totalMint = totalMint.add(value);
         return true;
     }
 
@@ -75,6 +80,7 @@ contract Layer2BridgeDelegate is
         returns (bool)
     {
         erc20Token.safeTransferFrom(account, address(this), value);
+        totalBurn = totalBurn.add(value);
         return true;
     }
 
@@ -106,11 +112,31 @@ contract Layer2BridgeDelegate is
         return tokenSet.at(index);
     }
 
-    function stake(uint amount) external {
+    function stake(uint256 amount) external {
+        address tokenAddr = address(erc20Token);
 
+        erc20Token.safeTransferFrom(msg.sender, address(this), amount);
+
+        Staker storage s = stakers[tokenAddr][msg.sender];
+        if (!stakerSet[tokenAddr].contains(msg.sender)) {
+            stakerSet[tokenAddr].add(msg.sender);
+        }
+        s.amount = s.amount.add(amount);
+        emit Stake(msg.sender, amount);
     }
 
-    function withdraw(uint amount) external {
-        
+    function withdraw(uint256 amount) external {
+        address user = msg.sender;
+        address tokenAddr = address(erc20Token);
+        require(stakerSet[tokenAddr].contains(user), "unknown staker");
+        Staker storage s = stakers[tokenAddr][user];
+        uint256 amount = s.amount;
+        s.amount = 0;
+
+        stakerSet[tokenAddr].remove(user);
+        delete stakers[tokenAddr][user];
+
+        erc20Token.safeTransfer(user, amount);
+        emit Withdraw(user, amount);
     }
 }
