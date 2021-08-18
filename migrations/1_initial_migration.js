@@ -10,9 +10,11 @@ module.exports = async function (deployer) {
 
   const proxyAdmin = '0x2AA0175Eb8b0FB818fFF3c518792Cc1a327a1338';
 
-  const admin = '0x4Cf0A877E906DEaD748A41aE7DA8c220E4247D9e';
+  // TOKEN MANAGER
+  const admin = '0xd2f76C4B824A9311F5979C512a47C0acA5Eb8Ad9';
 
-  const tokenAddress = ''
+  // USDT 
+  const tokenAddress = '0xD4B5f10D61916Bd6E0860144a91Ac658dE8a1437'
 
   await deployer.deploy(CommonProxy, layer2bridge.address, proxyAdmin, '0x');
 

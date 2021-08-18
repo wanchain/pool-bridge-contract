@@ -41,11 +41,11 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-    // development: {
-    //  host: "127.0.0.1",     // Localhost (default: none)
-    //  port: 8545,            // Standard Ethereum port (default: none)
-    //  network_id: "*",       // Any network (default: none)
-    // },
+    development: {
+      host: "127.0.0.1",     // Localhost (default: none)
+      port: 8545,            // Standard Ethereum port (default: none)
+      network_id: "*",       // Any network (default: none)
+    },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
@@ -71,10 +71,11 @@ module.exports = {
     // network_id: 2111,   // This network is yours, in the cloud.
     // production: true    // Treats this network as if it was a public net. (default: false)
     // }
-    ropsten: {
-      provider: () => new HDWalletProvider(process.PK, `https://rinkeby.arbitrum.io/rpc`),
+    arbitrum: {
+      provider: () => new HDWalletProvider(process.env.PK, 'https://rinkeby.arbitrum.io/rpc'),
       network_id: "*",       // Ropsten's id
-      // gas: 5500000,        // Ropsten has a lower block limit than mainnet
+      gas: 5500000,        // Ropsten has a lower block limit than mainnet
+      gasPrice: 1e9,
       // confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       // timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
@@ -85,6 +86,11 @@ module.exports = {
   mocha: {
     // timeout: 100000
   },
+
+  plugins: [
+    "solidity-coverage"
+    // "truffle-plugin-verify"
+  ],
 
   // Configure your compilers
   compilers: {
