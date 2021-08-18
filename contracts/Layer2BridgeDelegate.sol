@@ -89,7 +89,7 @@ contract Layer2BridgeDelegate is
     {
         address[] memory stakerAddress = new address[](length);
         for (uint i=0; i<length; i++) {
-            stakerAddress[i] = stakers.at(i);
+            stakerAddress[i] = stakers.at(i + start);
         }
         return stakerAddress;
     }
