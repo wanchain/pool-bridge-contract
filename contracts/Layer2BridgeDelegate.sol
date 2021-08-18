@@ -28,14 +28,6 @@ contract Layer2BridgeDelegate is
         erc20Token = ERC20(_tokenAddress);
     }
 
-    function initializeV2() external initializer {
-        tokenSet.add(address(erc20Token));
-        tokens[address(erc20Token)].tokenAddr = address(erc20Token);
-        tokens[address(erc20Token)].symbol = erc20Token.symbol();
-        tokens[address(erc20Token)].decimal = erc20Token.decimals();
-        tokens[address(erc20Token)].enabled = true;
-    }
-
     function name() external view returns (string memory) {
         return erc20Token.name();
     }
@@ -70,7 +62,6 @@ contract Layer2BridgeDelegate is
         returns (bool)
     {
         erc20Token.safeTransfer(account, value);
-        totalMint = totalMint.add(value);
         return true;
     }
 
@@ -80,63 +71,46 @@ contract Layer2BridgeDelegate is
         returns (bool)
     {
         erc20Token.safeTransferFrom(account, address(this), value);
-        totalBurn = totalBurn.add(value);
         return true;
     }
 
-    function getStakerCountByToken(address tokenAddr)
+    function getStakersCount()
         external
         view
         returns (uint256 count)
     {
-        return stakerSet[tokenAddr].length();
+        return stakers.length();
     }
 
-    function getStakeAddrByIndex(address tokenAddr, uint256 index)
+    function getStakers(uint start, uint length)
         external
         view
-        returns (address from)
+        returns (address[] memory)
     {
-        return stakerSet[tokenAddr].at(index);
-    }
-
-    function getTokenCount() external view returns (uint256 count) {
-        return tokenSet.length();
-    }
-
-    function getTokenAddressByIndex(uint256 index)
-        external
-        view
-        returns (address token)
-    {
-        return tokenSet.at(index);
+        address[] memory stakerAddress = new address[](length);
+        for (uint i=0; i<length; i++) {
+            stakerAddress[i] = stakers.at(i);
+        }
+        return stakerAddress;
     }
 
     function stake(uint256 amount) external {
-        address tokenAddr = address(erc20Token);
-
         erc20Token.safeTransferFrom(msg.sender, address(this), amount);
-
-        Staker storage s = stakers[tokenAddr][msg.sender];
-        if (!stakerSet[tokenAddr].contains(msg.sender)) {
-            stakerSet[tokenAddr].add(msg.sender);
-        }
-        s.amount = s.amount.add(amount);
+        stakers.add(msg.sender);
+        stakersAmount[msg.sender] = stakersAmount[msg.sender].add(amount);
+        totalStaked = totalStaked.add(amount);
         emit Stake(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) external {
-        address user = msg.sender;
-        address tokenAddr = address(erc20Token);
-        require(stakerSet[tokenAddr].contains(user), "unknown staker");
-        Staker storage s = stakers[tokenAddr][user];
-        uint256 amount = s.amount;
-        s.amount = 0;
-
-        stakerSet[tokenAddr].remove(user);
-        delete stakers[tokenAddr][user];
-
-        erc20Token.safeTransfer(user, amount);
-        emit Withdraw(user, amount);
+        uint balance = erc20Token.balanceOf(address(this));
+        require(amount <= balance, "Pool balance not enough");
+        stakersAmount[msg.sender] = stakersAmount[msg.sender].sub(amount);
+        if (stakersAmount[msg.sender] == 0) {
+            stakers.remove(msg.sender);
+        }
+        totalStaked = totalStaked.sub(amount);
+        erc20Token.safeTransfer(msg.sender, amount);
+        emit Withdraw(msg.sender, amount);
     }
 }
