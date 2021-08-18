@@ -77,9 +77,17 @@ contract Layer2BridgeDelegate is
     function getStakersCount()
         external
         view
-        returns (uint256 count)
+        returns (uint256)
     {
         return stakers.length();
+    }
+
+    function getStakerAmount(address _user)
+        external
+        view
+        returns (uint256)
+    {
+        return stakersAmount[_user];
     }
 
     function getStakers(uint start, uint length)
