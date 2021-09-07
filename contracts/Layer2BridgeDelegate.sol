@@ -83,7 +83,7 @@ contract Layer2BridgeDelegate is
     }
 
     function getStakerAmount(address _user)
-        external
+        public
         view
         returns (uint256)
     {
@@ -100,6 +100,20 @@ contract Layer2BridgeDelegate is
             stakerAddress[i] = stakers.at(i + start);
         }
         return stakerAddress;
+    }
+
+    function getStakersAmount(uint start, uint length)
+        external
+        view
+        returns (address[] memory, uint[] memory)
+    {
+        address[] memory stakerAddress = new address[](length);
+        uint[] memory stakersAmount = new uint[](length);
+        for (uint i=0; i<length; i++) {
+            stakerAddress[i] = stakers.at(i + start);
+            stakersAmount[i] = getStakerAmount(stakerAddress[i]);
+        }
+        return (stakerAddress, stakersAmount);
     }
 
     function stake(uint256 amount) external {
