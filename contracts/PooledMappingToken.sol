@@ -73,4 +73,10 @@ contract PooledMappingToken is
         erc20Token.safeTransferFrom(account, address(this), value);
         return true;
     }
+
+    function transferOwner(address _admin) external onlyAdmin {
+        require(_admin != msg.sender, "same admin");
+        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
+        renounceRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
 }
